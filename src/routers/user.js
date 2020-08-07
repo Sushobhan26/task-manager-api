@@ -3,6 +3,7 @@ const User = require('../models/user');
 const auth = require('../middleware/authenticator')
 const Jimp = require('jimp')
 const multer = require('multer')
+const { sendWelcomeMail, sendDeleteMail } = require('../emails/account')
 const router = new express.Router()
 //const bcrypt = require('bcryptjs')
 
@@ -22,6 +23,7 @@ router.post('/users', async(req, res) => {
         //const hashPwd = await bcrypt.hash(usrPwd, 8)
         //user.password = hashPwd
         await user.save()
+        sendWelcomeMail(user.email, user.name)
         const token = await user.generateAuthToken()
         res.status(201).send({user, token})
     }catch(e) {
@@ -146,6 +148,7 @@ router.delete('/users/me', auth, async(req, res) => {
     //         return res.status(404).send()
     //     }
     await req.user.remove()
+    sendDeleteMail(req.user.email, req.user.name)
     res.send(req.user)
 
     }catch(e){
